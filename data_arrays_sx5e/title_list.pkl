@@ -1,0 +1,40 @@
+(lp0
+S'May 25, 2018'
+p1
+aS'Jun 18, 2018'
+p2
+aS'Jul 10, 2018'
+p3
+aS'Jul 31, 2018'
+p4
+aS'Aug 22, 2018'
+p5
+aS'Sep 13, 2018'
+p6
+aS'Oct 05, 2018'
+p7
+aS'Oct 26, 2018'
+p8
+aS'Nov 16, 2018'
+p9
+aS'Dec 10, 2018'
+p10
+aS'Jan 07, 2019'
+p11
+aS'Jan 28, 2019'
+p12
+aS'Feb 18, 2019'
+p13
+aS'Mar 11, 2019'
+p14
+aS'Apr 01, 2019'
+p15
+aS'Apr 24, 2019'
+p16
+aS'May 17, 2019'
+p17
+aS'Jun 12, 2019'
+p18
+aS'Jul 04, 2019'
+p19
+a.
