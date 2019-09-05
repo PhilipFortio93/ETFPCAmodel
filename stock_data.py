@@ -102,7 +102,7 @@ def static_load(data):
 # 	for 
 if __name__ == "__main__":
 
-	file_name = 'data_arrays_sx5e/raw_stock_data_sector_sx5e'
+	file_name = 'data_arrays/raw_stock_data_sector'
 	try:
 		format_data = pd.read_pickle(file_name+".pkl")
 		print("loaded stored pickle")
@@ -164,12 +164,15 @@ if __name__ == "__main__":
 	format_data = format_data.dropna()#drop any rows with na
 	format_data = format_data[-120:]
 	print('raw_data: ', format_data.head())
+	last_date = str(format_data[-1:].index.values[0])
+	print(last_date)
 	data_points = format_data.shape[0]
 	stocks = format_data.shape[1]
 
 	names = format_data.columns
 	
-
+	today = datetime.today().strftime('%Y-%m-%d')
+	key = '{}/{}/Holdings.json'.format(today,'ISF')
 
 
 	format_data = format_data/stocks
@@ -215,17 +218,17 @@ if __name__ == "__main__":
 
 
 
-	print('Eigenvectors \n%s' %eig_vecs)
-	print('\nEigenvalues \n%s' %eig_vals)
+	# print('Eigenvectors \n%s' %eig_vecs)
+	# print('\nEigenvalues \n%s' %eig_vals)
 	eigen_sum = eig_vals.sum()
-	print('eigen_sum = ',eigen_sum)
+	# print('eigen_sum = ',eigen_sum)
 	multi_eig = np.column_stack((eig_vecs.T[0],eig_vecs.T[1],eig_vecs.T[2],eig_vecs.T[3]))
 	# # print('\multi_eig \n%s' %multi_eig)
 
-	print('stockperf: ',stockperf)
+	print('stockperf: \n%s'%stockperf)
 
 	i = 0
-	while i < 4:
+	while i < 2:
 		fig2, ax2 = plt.subplots(1,1)
 		fig2.tight_layout()
 
@@ -233,112 +236,115 @@ if __name__ == "__main__":
 		names_sort = names[inds]
 		comp1_sort = np.sort(eig_vecs.T[i])
 		ax2.bar(names_sort,comp1_sort)
-		ax2.set_title('Component '+str(i))
+		ax2.set_title('Component '+str(i+1))
 		ax2.set_xticklabels(names_sort,rotation=90)
+		fig2.subplots_adjust(bottom=0.35)
+		for label in ax2.xaxis.get_ticklabels()[::2]:
+			label.set_visible(False)
 		i = i + 1
 
 
-	fig, ax = plt.subplots(5,1)
+	# fig, ax = plt.subplots(5,1)
 
-	ax[1].plot(cumulativereturns)
-	ax[1].set_title('Portfolio returns')
+	# ax[1].plot(cumulativereturns)
+	# ax[1].set_title('Portfolio returns')
 	
-	# # plotting 
-	# # fig, ax = plt.subplots(2,5)
-	# # num_bins = 100
-	# # i = 0
-	# # while (i < 2):
-	# # 	j = 0
-	# # 	while( j < 5):
-	# # 		print(data_array[:, i*5 + j])
-	# # 		n, bins, patches = ax[i,j].hist(data_array[:, i*5 + j], num_bins, density=1)
-	# # 		ax[i,j].set_title(names[i*5+j])
-	# # 		j = j + 1
-	# # 	i = i +1
+	# # # plotting 
+	# # # fig, ax = plt.subplots(2,5)
+	# # # num_bins = 100
+	# # # i = 0
+	# # # while (i < 2):
+	# # # 	j = 0
+	# # # 	while( j < 5):
+	# # # 		print(data_array[:, i*5 + j])
+	# # # 		n, bins, patches = ax[i,j].hist(data_array[:, i*5 + j], num_bins, density=1)
+	# # # 		ax[i,j].set_title(names[i*5+j])
+	# # # 		j = j + 1
+	# # # 	i = i +1
 
-	# # plt.show()
+	# # # plt.show()
 
-	# This applies a linear transform on the data into a basis in which the correlation matrix is diagonal
-	principle_two = mean_adj_data.dot(multi_eig) 
-	print('linear transform \n%s' %principle_two)
-	# This reconstructs an estimate of the returns based on the decomposed eigenvectors
-	recon1 = np.outer(principle_two.T[0],multi_eig.T[0]) #+ np.mean(data_array, axis =0)
-	print('recon1 \n%s' %recon1)
+	# # This applies a linear transform on the data into a basis in which the correlation matrix is diagonal
+	# principle_two = mean_adj_data.dot(multi_eig) 
+	# print('linear transform \n%s' %principle_two)
+	# # This reconstructs an estimate of the returns based on the decomposed eigenvectors
+	# recon1 = np.outer(principle_two.T[0],multi_eig.T[0]) #+ np.mean(data_array, axis =0)
+	# print('recon1 \n%s' %recon1)
 
-	recon2 = np.outer(principle_two.T[1],multi_eig.T[1]) #+ np.mean(data_array, axis =0)
-	# print('recon2 \n%s' %recon2)
+	# recon2 = np.outer(principle_two.T[1],multi_eig.T[1]) #+ np.mean(data_array, axis =0)
+	# # print('recon2 \n%s' %recon2)
 
-	recon = recon1 + recon2 + np.mean(data_array, axis =0)
-	print('total \n%s' %recon)
-	print('initial dat \n%s'%data_array)
-	print(recon1.shape)
-	cumrecon = np.cumsum(recon)
+	# recon = recon1 + recon2 + np.mean(data_array, axis =0)
+	# print('total \n%s' %recon)
+	# print('initial dat \n%s'%data_array)
+	# print(recon1.shape)
+	# cumrecon = np.cumsum(recon)
 
-	print('Actual returns',dailyreturns)
-	print('reconstructed', recon.sum(axis=1))
-	reconerror = abs(recon.sum(axis=1) - dailyreturns)
-	print('recon error for 2 manual componenets: ',np.sum(reconerror)/data_points)
-	ax[0].plot(cumrecon)
-	ax[0].set_title("manual PCA recon")
+	# print('Actual returns',dailyreturns)
+	# print('reconstructed', recon.sum(axis=1))
+	# reconerror = abs(recon.sum(axis=1) - dailyreturns)
+	# print('recon error for 2 manual componenets: ',np.sum(reconerror)/data_points)
+	# ax[0].plot(cumrecon)
+	# ax[0].set_title("manual PCA recon")
 
-	pca = PCA(n_components=2)
-	principalComponents = pca.fit_transform(data_array)
-	# principalDf = pd.DataFrame(data = principalComponents, columns = ['principal component 1'])
+	# pca = PCA(n_components=2)
+	# principalComponents = pca.fit_transform(data_array)
+	# # principalDf = pd.DataFrame(data = principalComponents, columns = ['principal component 1'])
 
-	reconstruction = pca.inverse_transform(principalComponents) 
-	reconstructionDf = pd.DataFrame(data = reconstruction, columns = names)
+	# reconstruction = pca.inverse_transform(principalComponents) 
+	# reconstructionDf = pd.DataFrame(data = reconstruction, columns = names)
 
-	# print(principalDf)
-	# print(pca.components_[0])
-	# print(pca.explained_variance_)
-	# print(format_data)
-	# print(reconstructionDf)
+	# # print(principalDf)
+	# # print(pca.components_[0])
+	# # print(pca.explained_variance_)
+	# # print(format_data)
+	# # print(reconstructionDf)
 
-	recondailyreturns = np.cumsum(reconstructionDf.values.sum(axis=1))
-	print('pca shape: ',reconstructionDf.shape)
-	reconerror = abs(reconstructionDf.values.sum(axis=1)- dailyreturns)
-	# print(reconerror)
-	print('recon error for 2 componenets: ',np.sum(reconerror)/data_points)
+	# recondailyreturns = np.cumsum(reconstructionDf.values.sum(axis=1))
+	# print('pca shape: ',reconstructionDf.shape)
+	# reconerror = abs(reconstructionDf.values.sum(axis=1)- dailyreturns)
+	# # print(reconerror)
+	# print('recon error for 2 componenets: ',np.sum(reconerror)/data_points)
 
-	ax[2].plot(recondailyreturns)
-	ax[2].set_title("2 component recon")
+	# ax[2].plot(recondailyreturns)
+	# ax[2].set_title("2 component recon")
 
-	pca = PCA(n_components=10)
-	principalComponents = pca.fit_transform(data_array)
-	reconstruction = pca.inverse_transform(principalComponents) 
-	reconstructionDf = pd.DataFrame(data = reconstruction
-             , columns = names)
-	recondailyreturns = np.cumsum(reconstructionDf.values.sum(axis=1))
-	ax[3].plot(recondailyreturns)
-	ax[3].set_title("10 component recon")
+	# pca = PCA(n_components=10)
+	# principalComponents = pca.fit_transform(data_array)
+	# reconstruction = pca.inverse_transform(principalComponents) 
+	# reconstructionDf = pd.DataFrame(data = reconstruction
+ #             , columns = names)
+	# recondailyreturns = np.cumsum(reconstructionDf.values.sum(axis=1))
+	# ax[3].plot(recondailyreturns)
+	# ax[3].set_title("10 component recon")
 
-	recondailyreturns = np.cumsum(reconstructionDf.values.sum(axis=1))
+	# recondailyreturns = np.cumsum(reconstructionDf.values.sum(axis=1))
 
-	reconerror = abs(reconstructionDf.values.sum(axis=1)- dailyreturns)
-	# print(reconerror)
-	print('recon error for 10 componenets: ',np.sum(reconerror)/data_points)
+	# reconerror = abs(reconstructionDf.values.sum(axis=1)- dailyreturns)
+	# # print(reconerror)
+	# print('recon error for 10 componenets: ',np.sum(reconerror)/data_points)
 
-	print('explained var 10 componenets: ',pca.explained_variance_.sum()/eigen_sum)
+	# print('explained var 10 componenets: ',pca.explained_variance_.sum()/eigen_sum)
 
-	pca = PCA(n_components=14)
-	principalComponents = pca.fit_transform(data_array)
-	# print(principalComponents)
-	reconstruction = pca.inverse_transform(principalComponents) 
-	reconstructionDf = pd.DataFrame(data = reconstruction
-             , columns = names)
-	# print(reconstructionDf)
-	recondailyreturns = np.cumsum(reconstructionDf.values.sum(axis=1))
-	ax[4].plot(recondailyreturns)
-	ax[4].set_title("14 component recon")
+	# pca = PCA(n_components=14)
+	# principalComponents = pca.fit_transform(data_array)
+	# # print(principalComponents)
+	# reconstruction = pca.inverse_transform(principalComponents) 
+	# reconstructionDf = pd.DataFrame(data = reconstruction
+ #             , columns = names)
+	# # print(reconstructionDf)
+	# recondailyreturns = np.cumsum(reconstructionDf.values.sum(axis=1))
+	# ax[4].plot(recondailyreturns)
+	# ax[4].set_title("14 component recon")
 
-	recondailyreturns = np.cumsum(reconstructionDf.values.sum(axis=1))
+	# recondailyreturns = np.cumsum(reconstructionDf.values.sum(axis=1))
 
-	reconerror = abs(reconstructionDf.values.sum(axis=1)- dailyreturns)
-	# print(reconerror)
-	print('recon error for 14 componenets: ',np.sum(reconerror)/data_points)
+	# reconerror = abs(reconstructionDf.values.sum(axis=1)- dailyreturns)
+	# # print(reconerror)
+	# print('recon error for 14 componenets: ',np.sum(reconerror)/data_points)
 
-	print('explained var for 14 comp: ',pca.explained_variance_.sum()/eigen_sum)
-	eig_vecsDf = pd.DataFrame(data = eig_vecs)
+	# print('explained var for 14 comp: ',pca.explained_variance_.sum()/eigen_sum)
+	# eig_vecsDf = pd.DataFrame(data = eig_vecs)
 	# print('Eigenvectors \n%s' %eig_vecsDf)
 
 

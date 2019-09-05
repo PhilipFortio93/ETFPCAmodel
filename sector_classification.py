@@ -16,6 +16,7 @@ import os
 from sklearn.decomposition import PCA
 from sklearn import mixture
 from matplotlib.colors import LogNorm
+import itertools
 # import keras
 # from keras.models import load_model
 
@@ -30,14 +31,15 @@ class AnimatedScatter(object):
 		self.data_dir = data_dir
 		with open('data_arrays/title_list.pkl', 'rb') as f:
 			self.title_list = pickle.load(f)
-
+		self.ax.set_xlim([-1,0])
+		self.ax.set_ylim([-1,0])
 		self.label = label
 		self.standout = standout
 
 		self.ani = animation.FuncAnimation(self.fig, self.update, interval=1000, init_func= self.setup_plot, blit=False, frames=xrange(self.frames))
 		# self.indexlabel = indexlabel
 		if(save_fig==True):
-			self.ani.save('line.gif', dpi=300, writer='imagemagick')
+			self.ani.save('line_finance_zoom.gif', dpi=300, writer='imagemagick')
 
 	
 	def setup_plot(self):
@@ -57,13 +59,15 @@ class AnimatedScatter(object):
 		Z = gmm.score_samples(XX)
 		print(max(Z))
 		Z = Z.reshape(X.shape)*50
+		colors = ['red' for val in x]
+		print('colors: ', colors)
 
 		self.CS = plt.contourf(X, Y, Z	,cmap='jet', 
                  levels=np.arange(-1000, 1000, 50))
 		self.CB = plt.colorbar(self.CS, shrink=0.8, extend='both')
 
-		self.scat = self.ax.scatter(x,y,marker='x')
-		self.ax.axis([-1,1,-1,1])
+		self.scat = self.ax.scatter(x,y,marker='x',zorder=1000, c=colors)
+		self.ax.axis([-0.8,-0.2,-0.8,-0.2])
 
 
 		self.title = self.ax.text(0.5,1, self.title_list[0], bbox={'facecolor':'w', 'alpha':1, 'pad':5},transform=self.ax.transAxes, ha="center")
@@ -81,7 +85,7 @@ class AnimatedScatter(object):
 			if i in self.standout:
 				self.annotations.append(self.ax.annotate(txt,(x[i],y[i]), fontsize=9, fontweight=1000))
 			else:
-				self.annotations.append(self.ax.annotate(txt,(x[i],y[i]), fontsize=9))
+				self.annotations.append(self.ax.annotate(txt,(x[i],y[i]), fontsize=9,fontweight=1000))
 		# 	print(self.annotations[i].xy)
 		# print(self.annotations)
 
@@ -120,7 +124,7 @@ class AnimatedScatter(object):
 
 		x = data[:,:1]
 		y = data[:,1:]
-		self.scat.set_offsets(np.c_[data[:,:2]])
+		
 
 		# self.scat = self.ax.scatter(x,y)
 		# self.ax.annotate(self.label,(x[self.indexlabel],y[self.indexlabel]),xytext=(x[self.indexlabel],y[self.indexlabel]), fontsize=9)
@@ -148,7 +152,7 @@ class AnimatedScatter(object):
 		self.CS = plt.contourf(X, Y, Z, cmap='jet',
                   levels=np.arange(-1000, 1000, 50))
 		# print(self.annotations[2])
-		
+		self.scat.set_offsets(np.c_[data[:,:2]])
 		return self.scat, self.title, self.annotations,self.CS, self.CB, #self.annotate,
 # Returns a short sequential model
 def create_model(inputshape, outputshape):
@@ -175,7 +179,8 @@ if __name__ == "__main__":
 	print(all_data.shape)
 	columns = list(format_data.columns)
 	print(columns)
-	one_follow = [x if x[:x.find("-")] == 'BARC' else '' for x in columns]
+	one_follow = [x if x[:x.find("-")] == 'LSE' else '' for x in columns]
+	one_follow = [x if x[x.find("-")+1:] == 'Financial' else '' for x in columns]
 	# label_index = 3
 	total_frames = 65
 	k = 0
@@ -302,7 +307,7 @@ if __name__ == "__main__":
 		print("not running model")
 
 
-	a = AnimatedScatter(columns,total_frames,np.arange(0,99,10),main_dir+'/pca_weights_', False)
+	a = AnimatedScatter(columns,total_frames,np.arange(0,99,10),main_dir+'/pca_weights_', True)
 	plt.show()
 
 
